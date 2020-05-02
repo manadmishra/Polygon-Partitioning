@@ -138,54 +138,10 @@ class CGPPPartition {
             PartitionVertex();
         };
         
-        struct MonotoneVertex {
-            CGPPPoint p;
-            long previous;
-            long next;
-        };
-        
-        class VertexSorter{
-            MonotoneVertex *vertices;
-        public:
-            VertexSorter(MonotoneVertex *v) : vertices(v) {}
-            bool operator() (long index1, long index2);
-        };
         
         struct Diagonal {
             long index1;
             long index2;
-        };
-
-#ifdef CGPP_ALLOCATOR
-        typedef std::list<Diagonal, CGPP_ALLOCATOR(Diagonal)> DiagonalList;
-#else
-        typedef std::list<Diagonal> DiagonalList;
-#endif
-        
-        //dynamic programming state for minimum-weight triangulation
-        struct DPState {
-            bool visible;
-            tppl_float weight;
-            long bestvertex;
-        };
-        
-        //dynamic programming state for convex partitioning
-        struct DPState2 {
-            bool visible;
-            long weight;
-            DiagonalList pairs;
-        };
-        
-        //edge that intersects the scanline
-        struct ScanLineEdge {
-            mutable long index;
-            CGPPPoint p1;
-            CGPPPoint p2;
-            
-            //determines if the edge is to the left of another edge
-            bool operator< (const ScanLineEdge & other) const;
-            
-            bool IsConvex(const CGPPPoint& p1, const CGPPPoint& p2, const CGPPPoint& p3) const;
         };
         
         bool IsConvex(CGPPPoint& p1, CGPPPoint& p2, CGPPPoint& p3);

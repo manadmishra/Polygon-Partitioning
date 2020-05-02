@@ -381,7 +381,6 @@ int CGPPPartition::Triangulate_Ear_Clipping(CGPPPoly *poly, CGPPPolyList *triang
 
 	for(i=0;i<numvertices-3;i++) {
 		earfound = false;
-		//find the most extruded ear
 		for(j=0;j<numvertices;j++) {
 			if(!vertices[j].isActive) continue;
 			if(!vertices[j].isEar) continue;
