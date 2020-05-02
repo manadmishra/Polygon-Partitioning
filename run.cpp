@@ -151,6 +151,19 @@ int main() {
 
 	ReadPolyList("input.txt",&testpolys);
 
+	if(testpolys.size()>1)
+	{
+		// cout<<testpolys.front().GetOrientation()<<endl;
+		// cout<<testpolys.back().GetOrientation()<<endl;
+		testpolys.front().SetOrientation(1);
+		testpolys.back().SetOrientation(-1);
+		// cout<<testpolys.front().GetOrientation()<<endl;
+		// cout<<testpolys.back().GetOrientation()<<endl;
+	}
+
+	else
+		testpolys.front().SetOrientation(1);
+
 	DrawPolyList("input.bmp", &testpolys);
 	if(!pp.Triangulate_Ear_Clipping(&testpolys,&result)) printf("Error\n");
 	if(!pp.Convex_Partition_Hertel_Mehlhorn(&testpolys,&result1)) printf("Error\n");
