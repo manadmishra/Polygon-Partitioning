@@ -59,54 +59,6 @@ void ReadPolyList(const char *filename, list<TPPLPoly> *polys) {
 	fclose(fp);
 }
 
-
-void WritePoly(FILE *fp, TPPLPoly *poly) {
-	int i,numpoints;
-	numpoints = poly->GetNumPoints();
-
-	fprintf(fp,"%d\n",numpoints);
-	
-	if(poly->IsHole()) {
-		fprintf(fp,"1\n");
-	} else {
-		fprintf(fp,"0\n");
-	}
-
-	for(i=0;i<numpoints;i++) {
-		fprintf(fp,"%g %g\n",(*poly)[i].x, (*poly)[i].y);
-	}
-}
-
-void WritePoly(const char *filename, TPPLPoly *poly) {
-	FILE *fp = fopen(filename,"w");
-	if(!fp) {
-		printf("Error writing file %s\n", filename);
-		return;
-	}
-	WritePoly(fp,poly);
-	fclose(fp);	
-}
-
-void WritePolyList(FILE *fp, list<TPPLPoly> *polys) {
-	list<TPPLPoly>::iterator iter;
-
-	fprintf(fp,"%ld\n",polys->size());
-
-	for(iter = polys->begin(); iter != polys->end(); iter++) {
-		WritePoly(fp,&(*iter));
-	}
-}
-
-void WritePolyList(const char *filename, list<TPPLPoly> *polys) {
-	FILE *fp = fopen(filename,"w");
-	if(!fp) {
-		printf("Error writing file %s\n", filename);
-		return;
-	}
-	WritePolyList(fp,polys);
-	fclose(fp);	
-}
-
 void DrawPoly(Image *img, TPPLPoly *poly, tppl_float xmin, tppl_float xmax, tppl_float ymin, tppl_float ymax) {
 	TPPLPoint p1,p2,p1img,p2img,polymin,imgmin;
 	long i;
@@ -182,11 +134,9 @@ void DrawPolyList(const char *filename, list<TPPLPoly> *polys) {
 			if(iter->GetPoint(i).y < ymin) ymin = iter->GetPoint(i).y;
 			if(iter->GetPoint(i).y > ymax) ymax = iter->GetPoint(i).y;
 		}
-		//if(iter->GetOrientation() == TPPL_CCW) printf("CCW\n");
-		//else if (iter->GetOrientation() == TPPL_CW) printf("CW\n");
-		//else printf("gfdgdg\n");
+		
 	}
-	//printf("\n");
+
 
 	for(iter=polys->begin(); iter!=polys->end(); iter++) {
 		DrawPoly(&img, &(*iter), xmin, xmax, ymin, ymax);
@@ -195,110 +145,17 @@ void DrawPolyList(const char *filename, list<TPPLPoly> *polys) {
 	io.SaveImage(filename,&img);
 }
 
-bool ComparePoly(TPPLPoly *p1, TPPLPoly *p2) {
-	long i,n = p1->GetNumPoints();
-	if(n!=p2->GetNumPoints()) return false;
-	for(i=0;i<n;i++) {
-		if((*p1)[i]!=(*p2)[i]) return false;
-	}
-	return true;
-}
-
-bool ComparePoly(list<TPPLPoly> *polys1, list<TPPLPoly> *polys2) {
-	list<TPPLPoly>::iterator iter1, iter2;
-	long i,n = (long)polys1->size();
-	if(n!=(signed)polys2->size()) return false;
-	iter1 = polys1->begin();
-	iter2 = polys2->begin();
-	for(i=0;i<n;i++) {
-		if(!ComparePoly(&(*iter1),&(*iter2))) return false;
-		iter1++;
-		iter2++;
-	}
-	return true;
-}
-
-
-// void GenerateTestData() {
-// 	TPPLPartition pp;
-	
-// 	list<TPPLPoly> testpolys,result,expectedResult;
-
-// 	ReadPolyList("test_input.txt",&testpolys);
-
-// 	DrawPolyList("test_input.bmp",&testpolys);
-
-// 	pp.Triangulate_EC(&testpolys,&result);
-// 	//pp.Triangulate_EC(&(*testpolys.begin()),&result);
-// 	DrawPolyList("test_triangulate_EC.bmp",&result);
-// 	WritePolyList("test_triangulate_EC.txt",&result);
-
-// 	result.clear(); expectedResult.clear();
-
-// 	pp.Triangulate_OPT(&(*testpolys.begin()),&result);
-// 	DrawPolyList("test_triangulate_OPT.bmp",&result);
-// 	WritePolyList("test_triangulate_OPT.txt",&result);
-
-// 	result.clear(); expectedResult.clear();
-
-// 	pp.Triangulate_MONO(&testpolys,&result);
-// 	//pp.Triangulate_MONO(&(*testpolys.begin()),&result);
-// 	DrawPolyList("test_triangulate_MONO.bmp",&result);
-// 	WritePolyList("test_triangulate_MONO.txt",&result);
-
-// 	result.clear(); expectedResult.clear();
-
-// 	pp.ConvexPartition_HM(&testpolys,&result);
-// 	//pp.ConvexPartition_HM(&(*testpolys.begin()),&result);
-// 	DrawPolyList("test_convexpartition_HM.bmp",&result);
-// 	WritePolyList("test_convexpartition_HM.txt",&result);
-
-// 	result.clear(); expectedResult.clear();
-
-// 	pp.ConvexPartition_OPT(&(*testpolys.begin()),&result);
-// 	DrawPolyList("test_convexpartition_OPT.bmp",&result);
-// 	WritePolyList("test_convexpartition_OPT.txt",&result);
-// }
-
 int main() {
 	TPPLPartition pp;
 	list<TPPLPoly> testpolys,result, result1;
 
 	ReadPolyList("input.txt",&testpolys);
-	// printf("%d\n", testpolys.front().GetOrientation());
-	// testpolys.front().SetOrientation(1);
 
 	DrawPolyList("input.bmp", &testpolys);
 	if(!pp.Triangulate_EC(&testpolys,&result)) printf("Error\n");
 	if(!pp.ConvexPartition_HM(&testpolys,&result1)) printf("Error\n");
 	DrawPolyList("triangulation.bmp", &result);
 	DrawPolyList("polygonization.bmp", &result1);
-
-	// int ret;
-
- //    TPPLPoly poly;
- //    poly.Init(6);
- //    poly[0].x = 7 ; poly[0].y = 6;
- //    poly[1].x = 5 ; poly[1].y = 10;
- //    poly[2].x = 8 ; poly[2].y = 14;
- //    poly[3].x = 12; poly[3].y = 14;
- //    poly[4].x = 15; poly[4].y = 10;
- //    poly[5].x = 13; poly[5].y = 6;
-
- //    printf("%d\n", poly.GetOrientation());
-
- //    list<TPPLPoly> input;
- //    list<TPPLPoly> results;
- //    TPPLPartition partition;
-
- //    input.push_back(poly);
-
- //    ret = partition.Triangulate_EC(&poly, &results);
- //    printf("%d, %d\n", ret, results.size());
- //    results.clear();
-
- //    ret = partition.Triangulate_EC(&input, &results);
- //    printf("%d, %d\n", ret, results.size());
 
     return 0;
 
