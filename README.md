@@ -1,7 +1,6 @@
 # Computational Geometry Term Project
 
 Manad Mishra 16CS30019
-
 Vidit Goel 16IE33002
 
 
