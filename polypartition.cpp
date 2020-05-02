@@ -1,77 +1,76 @@
+#include <algorithm>
+#include <set>
+#include <vector>
+#include <stdexcept>
 #include <bits/stdc++.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <list>
-#include <algorithm>
-#include <set>
-#include <vector>
-#include <stdexcept>
+#include "polypartition.h"
 
 using namespace std;
 
-#include "polypartition.h"
+#define CGPP_VERTEXTYPE_REGULAR 0
+#define CGPP_VERTEXTYPE_MERGE 4
+#define CGPP_VERTEXTYPE_START 1
+#define CGPP_VERTEXTYPE_END 2
+#define CGPP_VERTEXTYPE_SPLIT 3
 
-#define TPPL_VERTEXTYPE_REGULAR 0
-#define TPPL_VERTEXTYPE_START 1
-#define TPPL_VERTEXTYPE_END 2
-#define TPPL_VERTEXTYPE_SPLIT 3
-#define TPPL_VERTEXTYPE_MERGE 4
-
-TPPLPoly::TPPLPoly() { 
+CGPPPoly::CGPPPoly() { 
 	hole = false;
 	numpoints = 0;
 	points = NULL;
 }
 
-TPPLPoly::~TPPLPoly() {
+CGPPPoly::~CGPPPoly() {
 	if(points) delete [] points;
 }
 
-void TPPLPoly::Clear() {
+void CGPPPoly::Clear() {
 	if(points) delete [] points;
 	hole = false;
 	numpoints = 0;
 	points = NULL;
 }
 
-void TPPLPoly::Init(long numpoints) {
+void CGPPPoly::Init(long numpoints) {
 	Clear();
 	this->numpoints = numpoints;
-	points = new TPPLPoint[numpoints];
+	points = new CGPPPoint[numpoints];
 }
 
-void TPPLPoly::Triangle(TPPLPoint &p1, TPPLPoint &p2, TPPLPoint &p3) {
+void CGPPPoly::Triangle(CGPPPoint &p1, CGPPPoint &p2, CGPPPoint &p3) {
 	Init(3);
 	points[0] = p1;
 	points[1] = p2;
 	points[2] = p3;
 }
 
-TPPLPoly::TPPLPoly(const TPPLPoly &src) : TPPLPoly() {
+CGPPPoly::CGPPPoly(const CGPPPoly &src) : CGPPPoly() {
 	hole = src.hole;
 	numpoints = src.numpoints;
 
 	if(numpoints > 0) {
-		points = new TPPLPoint[numpoints];
-		memcpy(points, src.points, numpoints*sizeof(TPPLPoint));
+		points = new CGPPPoint[numpoints];
+		memcpy(points, src.points, numpoints*sizeof(CGPPPoint));
 	}
 }
 
-TPPLPoly& TPPLPoly::operator=(const TPPLPoly &src) {
+CGPPPoly& CGPPPoly::operator=(const CGPPPoly &src) {
 	Clear();
 	hole = src.hole;
 	numpoints = src.numpoints;
 	
 	if(numpoints > 0) {
-		points = new TPPLPoint[numpoints];
-		memcpy(points, src.points, numpoints*sizeof(TPPLPoint));
+		points = new CGPPPoint[numpoints];
+		memcpy(points, src.points, numpoints*sizeof(CGPPPoint));
 	}
 	
 	return *this;
 }
 
-int TPPLPoly::GetOrientation() const {
+int CGPPPoly::GetOrientation() const {
 	long i1,i2;
 	tppl_float area = 0;
 	for(i1=0; i1<numpoints; i1++) {
@@ -79,28 +78,28 @@ int TPPLPoly::GetOrientation() const {
 		if(i2 == numpoints) i2 = 0;
 		area += points[i1].x * points[i2].y - points[i1].y * points[i2].x;
 	}
-	if(area>0) return TPPL_CCW;
-	if(area<0) return TPPL_CW;
+	if(area>0) return CGPP_CCW;
+	if(area<0) return CGPP_CW;
 	return 0;
 }
 
-void TPPLPoly::SetOrientation(int orientation) {
+void CGPPPoly::SetOrientation(int orientation) {
 	int polyorientation = GetOrientation();
 	if(polyorientation&&(polyorientation!=orientation)) {
 		Invert();
 	}
 }
 
-void TPPLPoly::Invert() {
+void CGPPPoly::Invert() {
 	std::reverse(points, points + numpoints);
 }
 
-TPPLPartition::PartitionVertex::PartitionVertex() : previous(NULL), next(NULL) {
+CGPPPartition::PartitionVertex::PartitionVertex() : previous(NULL), next(NULL) {
 
 }
 
-TPPLPoint TPPLPartition::Normalize(const TPPLPoint &p) {
-	TPPLPoint r;
+CGPPPoint CGPPPartition::Normalize(const CGPPPoint &p) {
+	CGPPPoint r;
 	tppl_float n = sqrt(p.x*p.x + p.y*p.y);
 	if(n!=0) {
 		r = p/n;
@@ -111,21 +110,20 @@ TPPLPoint TPPLPartition::Normalize(const TPPLPoint &p) {
 	return r;
 }
 
-tppl_float TPPLPartition::Distance(const TPPLPoint &p1, const TPPLPoint &p2) {
+tppl_float CGPPPartition::Distance(const CGPPPoint &p1, const CGPPPoint &p2) {
 	tppl_float dx,dy;
 	dx = p2.x - p1.x;
 	dy = p2.y - p1.y;
 	return(sqrt(dx*dx + dy*dy));
 }
 
-//checks if two lines intersect
-int TPPLPartition::Intersects(TPPLPoint &p11, TPPLPoint &p12, TPPLPoint &p21, TPPLPoint &p22) {
+int CGPPPartition::Intersects(CGPPPoint &p11, CGPPPoint &p12, CGPPPoint &p21, CGPPPoint &p22) {
 	if((p11.x == p21.x)&&(p11.y == p21.y)) return 0;
 	if((p11.x == p22.x)&&(p11.y == p22.y)) return 0;
 	if((p12.x == p21.x)&&(p12.y == p21.y)) return 0;
 	if((p12.x == p22.x)&&(p12.y == p22.y)) return 0;
 
-	TPPLPoint v1ort,v2ort,v;
+	CGPPPoint v1ort,v2ort,v;
 	tppl_float dot11,dot12,dot21,dot22;
 
 	v1ort.x = p12.y-p11.y;
@@ -150,20 +148,18 @@ int TPPLPartition::Intersects(TPPLPoint &p11, TPPLPoint &p12, TPPLPoint &p21, TP
 	return 1;
 }
 
-//removes holes from inpolys by merging them with non-holes
-int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
-	TPPLPolyList polys;
-	TPPLPolyList::iterator holeiter,polyiter,iter,iter2;
+int CGPPPartition::RemoveHoles(CGPPPolyList *inpolys, CGPPPolyList *outpolys) {
+	CGPPPolyList polys;
+	CGPPPolyList::iterator holeiter,polyiter,iter,iter2;
 	long i,i2,holepointindex,polypointindex;
-	TPPLPoint holepoint,polypoint,bestpolypoint;
-	TPPLPoint linep1,linep2;
-	TPPLPoint v1,v2;
-	TPPLPoly newpoly;
+	CGPPPoint holepoint,polypoint,bestpolypoint;
+	CGPPPoint linep1,linep2;
+	CGPPPoint v1,v2;
+	CGPPPoly newpoly;
 	bool hasholes;
 	bool pointvisible;
 	bool pointfound;
 	
-	//check for trivial case (no holes)
 	hasholes = false;
 	for(iter = inpolys->begin(); iter!=inpolys->end(); iter++) {
 		if(iter->IsHole()) {
@@ -181,7 +177,6 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
 	polys = *inpolys;
 
 	while(1) {
-		//find the hole point with the largest x
 		hasholes = false;
 		for(iter = polys.begin(); iter!=polys.end(); iter++) {
 			if(!iter->IsHole()) continue;
@@ -269,28 +264,28 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
 	return 1;
 }
 
-bool TPPLPartition::IsConvex(TPPLPoint& p1, TPPLPoint& p2, TPPLPoint& p3) {
+bool CGPPPartition::IsConvex(CGPPPoint& p1, CGPPPoint& p2, CGPPPoint& p3) {
 	tppl_float tmp;
 	tmp = (p3.y-p1.y)*(p2.x-p1.x)-(p3.x-p1.x)*(p2.y-p1.y);
 	if(tmp>0) return 1;
 	else return 0;
 }
 
-bool TPPLPartition::IsReflex(TPPLPoint& p1, TPPLPoint& p2, TPPLPoint& p3) {
+bool CGPPPartition::IsReflex(CGPPPoint& p1, CGPPPoint& p2, CGPPPoint& p3) {
 	tppl_float tmp;
 	tmp = (p3.y-p1.y)*(p2.x-p1.x)-(p3.x-p1.x)*(p2.y-p1.y);
 	if(tmp<0) return 1;
 	else return 0;
 }
 
-bool TPPLPartition::IsInside(TPPLPoint& p1, TPPLPoint& p2, TPPLPoint& p3, TPPLPoint &p) {
+bool CGPPPartition::IsInside(CGPPPoint& p1, CGPPPoint& p2, CGPPPoint& p3, CGPPPoint &p) {
 	if(IsConvex(p1,p,p2)) return false;
 	if(IsConvex(p2,p,p3)) return false;
 	if(IsConvex(p3,p,p1)) return false;
 	return true;
 }
 
-bool TPPLPartition::InCone(TPPLPoint &p1, TPPLPoint &p2, TPPLPoint &p3, TPPLPoint &p) {
+bool CGPPPartition::InCone(CGPPPoint &p1, CGPPPoint &p2, CGPPPoint &p3, CGPPPoint &p) {
 	bool convex;
 
 	convex = IsConvex(p1,p2,p3);
@@ -306,8 +301,8 @@ bool TPPLPartition::InCone(TPPLPoint &p1, TPPLPoint &p2, TPPLPoint &p3, TPPLPoin
 	}
 }
 
-bool TPPLPartition::InCone(PartitionVertex *v, TPPLPoint &p) {
-	TPPLPoint p1,p2,p3;
+bool CGPPPartition::InCone(PartitionVertex *v, CGPPPoint &p) {
+	CGPPPoint p1,p2,p3;
 
 	p1 = v->previous->p;
 	p2 = v->p;
@@ -316,17 +311,17 @@ bool TPPLPartition::InCone(PartitionVertex *v, TPPLPoint &p) {
 	return InCone(p1,p2,p3,p);
 }
 
-void TPPLPartition::UpdateVertexReflexity(PartitionVertex *v) {
+void CGPPPartition::UpdateVertexReflexity(PartitionVertex *v) {
 	PartitionVertex *v1 = NULL,*v3 = NULL;
 	v1 = v->previous;
 	v3 = v->next;
 	v->isConvex = !IsReflex(v1->p,v->p,v3->p);	
 }
 
-void TPPLPartition::UpdateVertex(PartitionVertex *v, PartitionVertex *vertices, long numvertices) {
+void CGPPPartition::UpdateVertex(PartitionVertex *v, PartitionVertex *vertices, long numvertices) {
 	long i;
 	PartitionVertex *v1 = NULL,*v3 = NULL;
-	TPPLPoint vec1,vec3;
+	CGPPPoint vec1,vec3;
 
 	v1 = v->previous;
 	v3 = v->next;
@@ -353,14 +348,13 @@ void TPPLPartition::UpdateVertex(PartitionVertex *v, PartitionVertex *vertices, 
 	}
 }
 
-//triangulation by ear removal
-int TPPLPartition::Triangulate_EC(TPPLPoly *poly, TPPLPolyList *triangles) {
+int CGPPPartition::Triangulate_Ear_Clipping(CGPPPoly *poly, CGPPPolyList *triangles) {
 	if(!poly->Valid()) return 0;
 
 	long numvertices;
 	PartitionVertex *vertices = NULL;
 	PartitionVertex *ear = NULL;
-	TPPLPoly triangle;
+	CGPPPoly triangle;
 	long i,j;
 	bool earfound;
 
@@ -430,30 +424,29 @@ int TPPLPartition::Triangulate_EC(TPPLPoly *poly, TPPLPolyList *triangles) {
 	return 1;
 }
 
-int TPPLPartition::Triangulate_EC(TPPLPolyList *inpolys, TPPLPolyList *triangles) {
-	TPPLPolyList outpolys;
-	TPPLPolyList::iterator iter;
+int CGPPPartition::Triangulate_Ear_Clipping(CGPPPolyList *inpolys, CGPPPolyList *triangles) {
+	CGPPPolyList outpolys;
+	CGPPPolyList::iterator iter;
 	
 	if(!RemoveHoles(inpolys,&outpolys)) return 0;
 	for(iter=outpolys.begin();iter!=outpolys.end();iter++) {
-		if(!Triangulate_EC(&(*iter),triangles)) return 0;
+		if(!Triangulate_Ear_Clipping(&(*iter),triangles)) return 0;
 	}
 	return 1;
 }
 
-int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
+int CGPPPartition::Convex_Partition_Hertel_Mehlhorn(CGPPPoly *poly, CGPPPolyList *parts) {
 	if(!poly->Valid()) return 0;
 	
-	TPPLPolyList triangles;
-	TPPLPolyList::iterator iter1,iter2;
-	TPPLPoly *poly1 = NULL,*poly2 = NULL;
-	TPPLPoly newpoly;
-	TPPLPoint d1,d2,p1,p2,p3;
+	CGPPPolyList triangles;
+	CGPPPolyList::iterator iter1,iter2;
+	CGPPPoly *poly1 = NULL,*poly2 = NULL;
+	CGPPPoly newpoly;
+	CGPPPoint d1,d2,p1,p2,p3;
 	long i11,i12,i21,i22,i13,i23,j,k;
 	bool isdiagonal;
 	long numreflex;
 
-	//check if the poly is already convex
 	numreflex = 0;
 	for(i11=0;i11<poly->GetNumPoints();i11++) {
 		if(i11==0) i12 = poly->GetNumPoints()-1;
@@ -470,7 +463,7 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
 		return 1;
 	}
 
-	if(!Triangulate_EC(poly,&triangles)) return 0;
+	if(!Triangulate_Ear_Clipping(poly,&triangles)) return 0;
 
 	for(iter1 = triangles.begin(); iter1 != triangles.end(); iter1++) {
 		poly1 = &(*iter1);
@@ -543,13 +536,13 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
 	return 1;
 }
 
-int TPPLPartition::ConvexPartition_HM(TPPLPolyList *inpolys, TPPLPolyList *parts) {
-	TPPLPolyList outpolys;
-	TPPLPolyList::iterator iter;
+int CGPPPartition::Convex_Partition_Hertel_Mehlhorn(CGPPPolyList *inpolys, CGPPPolyList *parts) {
+	CGPPPolyList outpolys;
+	CGPPPolyList::iterator iter;
 	
 	if(!RemoveHoles(inpolys,&outpolys)) return 0;
 	for(iter=outpolys.begin();iter!=outpolys.end();iter++) {
-		if(!ConvexPartition_HM(&(*iter),parts)) return 0;
+		if(!Convex_Partition_Hertel_Mehlhorn(&(*iter),parts)) return 0;
 	}
 	return 1;
 }

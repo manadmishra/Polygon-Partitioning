@@ -7,75 +7,69 @@
 
 typedef double tppl_float;
 #include <bits/stdc++.h>
-#define TPPL_CCW 1
-#define TPPL_CW -1
+#define CGPP_CCW 1
+#define CGPP_CW -1
 
-//2D point structure
-struct TPPLPoint {
+struct CGPPPoint {
     tppl_float x;
     tppl_float y;
-    // User-specified vertex identifier.  Note that this isn't used internally
-    // by the library, but will be faithfully copied around.
     int id;
     
-    TPPLPoint operator + (const TPPLPoint& p) const {
-        TPPLPoint r;
+    CGPPPoint operator + (const CGPPPoint& p) const {
+        CGPPPoint r;
         r.x = x + p.x;
         r.y = y + p.y;
         return r;
     }
     
-    TPPLPoint operator - (const TPPLPoint& p) const {
-        TPPLPoint r;
+    CGPPPoint operator - (const CGPPPoint& p) const {
+        CGPPPoint r;
         r.x = x - p.x;
         r.y = y - p.y;
         return r;
     }
     
-    TPPLPoint operator * (const tppl_float f ) const {
-        TPPLPoint r;
+    CGPPPoint operator * (const tppl_float f ) const {
+        CGPPPoint r;
         r.x = x*f;
         r.y = y*f;
         return r;
     }
     
-    TPPLPoint operator / (const tppl_float f ) const {
-        TPPLPoint r;
+    CGPPPoint operator / (const tppl_float f ) const {
+        CGPPPoint r;
         r.x = x/f;
         r.y = y/f;
         return r;
     }
     
-    bool operator==(const TPPLPoint& p) const {
+    bool operator==(const CGPPPoint& p) const {
         if((x == p.x)&&(y==p.y)) return true;
         else return false;
     }
     
-    bool operator!=(const TPPLPoint& p) const {
+    bool operator!=(const CGPPPoint& p) const {
         if((x == p.x)&&(y==p.y)) return false;
         else return true;
     }
 };
 
 
-//Polygon implemented as an array of points with a 'hole' flag
-class TPPLPoly {
+class CGPPPoly {
     protected:
         
-        TPPLPoint *points;
+        CGPPPoint *points;
         long numpoints;
         bool hole;
         
     public:
         
-        //constructors/destructors
-        TPPLPoly();
-        ~TPPLPoly();
+        CGPPPoly();
+        ~CGPPPoly();
         
-        TPPLPoly(const TPPLPoly &src);
-        TPPLPoly& operator=(const TPPLPoly &src);
+        CGPPPoly(const CGPPPoly &src);
+        CGPPPoly& operator=(const CGPPPoly &src);
         
-        //getters and setters
         long GetNumPoints() const {
             return numpoints;
         }
@@ -88,69 +82,55 @@ class TPPLPoly {
             this->hole = hole;
         }
         
-        TPPLPoint &GetPoint(long i) {
+        CGPPPoint &GetPoint(long i) {
             return points[i];
         }
         
-        const TPPLPoint &GetPoint(long i) const {
+        const CGPPPoint &GetPoint(long i) const {
             return points[i];
         }
 
-        TPPLPoint *GetPoints() {
+        CGPPPoint *GetPoints() {
             return points;
         }
         
-        TPPLPoint& operator[] (int i) {
+        CGPPPoint& operator[] (int i) {
             return points[i];
         }
 
-        const TPPLPoint& operator[] (int i) const {
+        const CGPPPoint& operator[] (int i) const {
             return points[i];
         }
         
-        //clears the polygon points
         void Clear();
         
-        //inits the polygon with numpoints vertices
         void Init(long numpoints);
         
-        //creates a triangle with points p1,p2,p3
-        void Triangle(TPPLPoint &p1, TPPLPoint &p2, TPPLPoint &p3);
+        void Triangle(CGPPPoint &p1, CGPPPoint &p2, CGPPPoint &p3);
         
-        //inverts the orfer of vertices
         void Invert();
         
-        //returns the orientation of the polygon
-        //possible values:
-        //   TPPL_CCW : polygon vertices are in counter-clockwise order
-        //   TPPL_CW : polygon vertices are in clockwise order
-        //       0 : the polygon has no (measurable) area
         int GetOrientation() const;
         
-        //sets the polygon orientation
-        //orientation can be
-        //   TPPL_CCW : sets vertices in counter-clockwise order
-        //   TPPL_CW : sets vertices in clockwise order
         void SetOrientation(int orientation);
 
-        //checks whether a polygon is valid or not
         inline bool Valid() const { return this->numpoints >= 3; }
 };
 
-#ifdef TPPL_ALLOCATOR
-typedef std::list<TPPLPoly, TPPL_ALLOCATOR(TPPLPoly)> TPPLPolyList;
+#ifdef CGPP_ALLOCATOR
+typedef std::list<CGPPPoly, CGPP_ALLOCATOR(CGPPPoly)> CGPPPolyList;
 #else
-typedef std::list<TPPLPoly> TPPLPolyList;
+typedef std::list<CGPPPoly> CGPPPolyList;
 #endif
 
-class TPPLPartition {
+class CGPPPartition {
     protected:
         struct PartitionVertex {
             bool isActive;
             bool isConvex;
             bool isEar;
             
-            TPPLPoint p;
+            CGPPPoint p;
             tppl_float angle;
             PartitionVertex *previous;
             PartitionVertex *next;
@@ -159,7 +139,7 @@ class TPPLPartition {
         };
         
         struct MonotoneVertex {
-            TPPLPoint p;
+            CGPPPoint p;
             long previous;
             long next;
         };
@@ -176,8 +156,8 @@ class TPPLPartition {
             long index2;
         };
 
-#ifdef TPPL_ALLOCATOR
-        typedef std::list<Diagonal, TPPL_ALLOCATOR(Diagonal)> DiagonalList;
+#ifdef CGPP_ALLOCATOR
+        typedef std::list<Diagonal, CGPP_ALLOCATOR(Diagonal)> DiagonalList;
 #else
         typedef std::list<Diagonal> DiagonalList;
 #endif
@@ -199,96 +179,42 @@ class TPPLPartition {
         //edge that intersects the scanline
         struct ScanLineEdge {
             mutable long index;
-            TPPLPoint p1;
-            TPPLPoint p2;
+            CGPPPoint p1;
+            CGPPPoint p2;
             
             //determines if the edge is to the left of another edge
             bool operator< (const ScanLineEdge & other) const;
             
-            bool IsConvex(const TPPLPoint& p1, const TPPLPoint& p2, const TPPLPoint& p3) const;
+            bool IsConvex(const CGPPPoint& p1, const CGPPPoint& p2, const CGPPPoint& p3) const;
         };
         
-        //standard helper functions
-        bool IsConvex(TPPLPoint& p1, TPPLPoint& p2, TPPLPoint& p3);
-        bool IsReflex(TPPLPoint& p1, TPPLPoint& p2, TPPLPoint& p3);
-        bool IsInside(TPPLPoint& p1, TPPLPoint& p2, TPPLPoint& p3, TPPLPoint &p);
+        bool IsConvex(CGPPPoint& p1, CGPPPoint& p2, CGPPPoint& p3);
+        bool IsReflex(CGPPPoint& p1, CGPPPoint& p2, CGPPPoint& p3);
+        bool IsInside(CGPPPoint& p1, CGPPPoint& p2, CGPPPoint& p3, CGPPPoint &p);
         
-        bool InCone(TPPLPoint &p1, TPPLPoint &p2, TPPLPoint &p3, TPPLPoint &p);
-        bool InCone(PartitionVertex *v, TPPLPoint &p);
+        bool InCone(CGPPPoint &p1, CGPPPoint &p2, CGPPPoint &p3, CGPPPoint &p);
+        bool InCone(PartitionVertex *v, CGPPPoint &p);
         
-        int Intersects(TPPLPoint &p11, TPPLPoint &p12, TPPLPoint &p21, TPPLPoint &p22);
+        int Intersects(CGPPPoint &p11, CGPPPoint &p12, CGPPPoint &p21, CGPPPoint &p22);
         
-        TPPLPoint Normalize(const TPPLPoint &p);
-        tppl_float Distance(const TPPLPoint &p1, const TPPLPoint &p2);
+        CGPPPoint Normalize(const CGPPPoint &p);
+        tppl_float Distance(const CGPPPoint &p1, const CGPPPoint &p2);
         
-        //helper functions for Triangulate_EC
         void UpdateVertexReflexity(PartitionVertex *v);
         void UpdateVertex(PartitionVertex *v,PartitionVertex *vertices, long numvertices);
         
         
     public:
         
-        //simple heuristic procedure for removing holes from a list of polygons
-        //works by creating a diagonal from the rightmost hole vertex to some visible vertex
-        //time complexity: O(h*(n^2)), h is the number of holes, n is the number of vertices
-        //space complexity: O(n)
-        //params:
-        //   inpolys : a list of polygons that can contain holes
-        //             vertices of all non-hole polys have to be in counter-clockwise order
-        //             vertices of all hole polys have to be in clockwise order
-        //   outpolys : a list of polygons without holes
-        //returns 1 on success, 0 on failure
-        int RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys);
+        int RemoveHoles(CGPPPolyList *inpolys, CGPPPolyList *outpolys);
         
-        //triangulates a polygon by ear clipping
-        //time complexity O(n^2), n is the number of vertices
-        //space complexity: O(n)
-        //params:
-        //   poly : an input polygon to be triangulated
-        //          vertices have to be in counter-clockwise order
-        //   triangles : a list of triangles (result)
-        //returns 1 on success, 0 on failure
-        int Triangulate_EC(TPPLPoly *poly, TPPLPolyList *triangles);
+        int Triangulate_Ear_Clipping(CGPPPoly *poly, CGPPPolyList *triangles);
         
-        //triangulates a list of polygons that may contain holes by ear clipping algorithm
-        //first calls RemoveHoles to get rid of the holes, and then Triangulate_EC for each resulting polygon
-        //time complexity: O(h*(n^2)), h is the number of holes, n is the number of vertices
-        //space complexity: O(n)
-        //params:
-        //   inpolys : a list of polygons to be triangulated (can contain holes)
-        //             vertices of all non-hole polys have to be in counter-clockwise order
-        //             vertices of all hole polys have to be in clockwise order
-        //   triangles : a list of triangles (result)
-        //returns 1 on success, 0 on failure
-        int Triangulate_EC(TPPLPolyList *inpolys, TPPLPolyList *triangles);
+        int Triangulate_Ear_Clipping(CGPPPolyList *inpolys, CGPPPolyList *triangles);
         
+        int Convex_Partition_Hertel_Mehlhorn(CGPPPoly *poly, CGPPPolyList *parts);
         
-        //partitions a polygon into convex polygons by using Hertel-Mehlhorn algorithm
-        //the algorithm gives at most four times the number of parts as the optimal algorithm
-        //however, in practice it works much better than that and often gives optimal partition
-        //uses triangulation obtained by ear clipping as intermediate result
-        //time complexity O(n^2), n is the number of vertices
-        //space complexity: O(n)
-        //params:
-        //   poly : an input polygon to be partitioned
-        //          vertices have to be in counter-clockwise order
-        //   parts : resulting list of convex polygons
-        //returns 1 on success, 0 on failure
-        int ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts);
-        
-        //partitions a list of polygons into convex parts by using Hertel-Mehlhorn algorithm
-        //the algorithm gives at most four times the number of parts as the optimal algorithm
-        //however, in practice it works much better than that and often gives optimal partition
-        //uses triangulation obtained by ear clipping as intermediate result
-        //time complexity O(n^2), n is the number of vertices
-        //space complexity: O(n)
-        //params:
-        //   inpolys : an input list of polygons to be partitioned
-        //             vertices of all non-hole polys have to be in counter-clockwise order
-        //             vertices of all hole polys have to be in clockwise order
-        //   parts : resulting list of convex polygons
-        //returns 1 on success, 0 on failure
-        int ConvexPartition_HM(TPPLPolyList *inpolys, TPPLPolyList *parts);
+        int Convex_Partition_Hertel_Mehlhorn(CGPPPolyList *inpolys, CGPPPolyList *parts);
         
 };
 

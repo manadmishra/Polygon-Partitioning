@@ -10,57 +10,8 @@ using namespace std;
 #include "image.h"
 #include "imageio.h"
 
-void ReadPoly(FILE *fp, TPPLPoly *poly) {
-	int i,numpoints,hole;
-	float x,y;
-
-	fscanf(fp,"%d\n",&numpoints);
-	poly->Init(numpoints);
-
-	fscanf(fp,"%d\n",&hole);
-	if(hole) poly->SetHole(true);
-
-	for(i=0;i<numpoints;i++) {
-		fscanf(fp,"%g %g\n",&x, &y);
-		(*poly)[i].x = x;
-		(*poly)[i].y = y;
-	}
-}
-
-void ReadPoly(const char *filename, TPPLPoly *poly) {
-	FILE *fp = fopen(filename,"r");
-	if(!fp) {
-		printf("Error reading file %s\n", filename);
-		return;
-	}
-	ReadPoly(fp,poly);
-	fclose(fp);	
-}
-
-void ReadPolyList(FILE *fp, list<TPPLPoly> *polys) {
-	int i,numpolys;
-	TPPLPoly poly;
-
-	polys->clear();
-	fscanf(fp,"%d\n",&numpolys);
-	for(i=0;i<numpolys;i++) {
-		ReadPoly(fp,&poly);
-		polys->push_back(poly);
-	}
-}
-
-void ReadPolyList(const char *filename, list<TPPLPoly> *polys) {
-	FILE *fp = fopen(filename,"r");
-	if(!fp) {
-		printf("Error reading file %s\n", filename);
-		return;
-	}
-	ReadPolyList(fp,polys);
-	fclose(fp);
-}
-
-void DrawPoly(Image *img, TPPLPoly *poly, tppl_float xmin, tppl_float xmax, tppl_float ymin, tppl_float ymax) {
-	TPPLPoint p1,p2,p1img,p2img,polymin,imgmin;
+void DrawPoly(Image *img, CGPPPoly *poly, tppl_float xmin, tppl_float xmax, tppl_float ymin, tppl_float ymax) {
+	CGPPPoint p1,p2,p1img,p2img,polymin,imgmin;
 	long i;
 	Image::Pixel color={0,0,0};
 
@@ -93,7 +44,7 @@ void DrawPoly(Image *img, TPPLPoly *poly, tppl_float xmin, tppl_float xmax, tppl
 	}
 }
 
-void DrawPoly(const char *filename, TPPLPoly *poly) {
+void DrawPoly(const char *filename, CGPPPoly *poly) {
 	Image img(500,500);
 	Image::Pixel white={255,255,255};
 	img.Clear(white);
@@ -115,13 +66,62 @@ void DrawPoly(const char *filename, TPPLPoly *poly) {
 	io.SaveImage(filename,&img);
 }
 
-void DrawPolyList(const char *filename, list<TPPLPoly> *polys) {
+void ReadPoly(FILE *fp, CGPPPoly *poly) {
+	int i,numpoints,hole;
+	float x,y;
+
+	fscanf(fp,"%d\n",&numpoints);
+	poly->Init(numpoints);
+
+	fscanf(fp,"%d\n",&hole);
+	if(hole) poly->SetHole(true);
+
+	for(i=0;i<numpoints;i++) {
+		fscanf(fp,"%g %g\n",&x, &y);
+		(*poly)[i].x = x;
+		(*poly)[i].y = y;
+	}
+}
+
+void ReadPoly(const char *filename, CGPPPoly *poly) {
+	FILE *fp = fopen(filename,"r");
+	if(!fp) {
+		printf("Error reading file %s\n", filename);
+		return;
+	}
+	ReadPoly(fp,poly);
+	fclose(fp);	
+}
+
+void ReadPolyList(FILE *fp, list<CGPPPoly> *polys) {
+	int i,numpolys;
+	CGPPPoly poly;
+
+	polys->clear();
+	fscanf(fp,"%d\n",&numpolys);
+	for(i=0;i<numpolys;i++) {
+		ReadPoly(fp,&poly);
+		polys->push_back(poly);
+	}
+}
+
+void ReadPolyList(const char *filename, list<CGPPPoly> *polys) {
+	FILE *fp = fopen(filename,"r");
+	if(!fp) {
+		printf("Error reading file %s\n", filename);
+		return;
+	}
+	ReadPolyList(fp,polys);
+	fclose(fp);
+}
+
+void DrawPolyList(const char *filename, list<CGPPPoly> *polys) {
 	Image img(500,500);
 	Image::Pixel white={255,255,255};
 	img.Clear(white);
 
 	ImageIO io;
-	list<TPPLPoly>::iterator iter;
+	list<CGPPPoly>::iterator iter;
 
 	tppl_float xmin = std::numeric_limits<tppl_float>::max();
 	tppl_float xmax = std::numeric_limits<tppl_float>::min();
@@ -146,14 +146,14 @@ void DrawPolyList(const char *filename, list<TPPLPoly> *polys) {
 }
 
 int main() {
-	TPPLPartition pp;
-	list<TPPLPoly> testpolys,result, result1;
+	CGPPPartition pp;
+	list<CGPPPoly> testpolys,result, result1;
 
 	ReadPolyList("input.txt",&testpolys);
 
 	DrawPolyList("input.bmp", &testpolys);
-	if(!pp.Triangulate_EC(&testpolys,&result)) printf("Error\n");
-	if(!pp.ConvexPartition_HM(&testpolys,&result1)) printf("Error\n");
+	if(!pp.Triangulate_Ear_Clipping(&testpolys,&result)) printf("Error\n");
+	if(!pp.Convex_Partition_Hertel_Mehlhorn(&testpolys,&result1)) printf("Error\n");
 	DrawPolyList("triangulation.bmp", &result);
 	DrawPolyList("polygonization.bmp", &result1);
 
