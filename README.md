@@ -1,7 +1,7 @@
-# Computational Geometry Term Project
+## Computational Geometry Term Project
 
-Manad Mishra 16CS30019
-Vidit Goel 16IE33002
+#Manad Mishra 16CS30019
+#Vidit Goel 16IE33002
 
 
 We have implemented Herkel-Mehlhorn Convex Partitioning algorithm which uses
